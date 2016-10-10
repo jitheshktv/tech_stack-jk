@@ -1,0 +1,10 @@
+---
+run_list:
+  - name: security
+    group: 1
+    layer: security
+    cfn_template: security_sawgrass_dsl.rb
+#  - layer: policy
+#    cfn_template: policy_demo_dsl.rb
+#  - layer: policy
+#    cfn_template: policy_s3-bucket_dsl.rb

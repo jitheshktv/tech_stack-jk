@@ -1,0 +1,24 @@
+source 'https://supermarket.chef.io'
+
+metadata
+
+# common for all tibco server types
+cookbook 'gcb_chef_cookbook-tibco_osgold', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_osgold.git'
+cookbook 'gcb_chef_cookbook-tibco_createhome', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_createhome.git'
+
+cookbook 'gcb_chef_cookbook-tibco_rv', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_rv.git'
+cookbook 'gcb_chef_cookbook-tibco_tra', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_tra.git'
+cookbook 'gcb_chef_cookbook-tibco_hawk', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_hawk.git'
+cookbook 'gcb_chef_cookbook-tibco_jmsclient', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_jmsclient.git'
+cookbook 'gcb_chef_cookbook-tibco_dbclient', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_dbclient.git'
+
+cookbook 'gcb_chef_cookbook-tibco_bw', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_bw.git'
+cookbook 'gcb_chef_cookbook-tibco_bwplugincopybook', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_bwplugincopybook.git'
+cookbook 'gcb_chef_cookbook-tibco_sdk', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_sdk.git'
+cookbook 'gcb_chef_cookbook-tibco_adldap', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_adldap.git'
+cookbook 'gcb_chef_cookbook-tibco_bwcerts', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_bwcerts.git'
+cookbook 'gcb_chef_cookbook-tibco_mqclient', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_mqclient.git'
+cookbook 'gcb_chef_cookbook-tibco_mwcconfig', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_mwcconfig.git'
+cookbook 'gcb_chef_cookbook-tibco_addmachinedbems', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_addmachinedbems.git'
+cookbook 'gcb_chef_cookbook-tibco_caddie', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_caddie.git'
+cookbook 'gcb_chef_cookbook-tibco_caddiestub', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_caddiestub.git'

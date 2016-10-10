@@ -1,0 +1,5 @@
+source 'https://supermarket.chef.io'
+
+metadata
+
+cookbook 'WAS-ND-AWS-Discovery-IBM-Packages', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-ibm_was.git'

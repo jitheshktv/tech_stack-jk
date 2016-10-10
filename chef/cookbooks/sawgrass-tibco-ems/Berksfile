@@ -1,0 +1,11 @@
+source 'https://supermarket.chef.io'
+
+metadata
+
+# common for all tibco server types
+cookbook 'gcb_chef_cookbook-tibco_osgold', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_osgold.git'
+cookbook 'gcb_chef_cookbook-tibco_createhome', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_createhome.git'
+
+# tibco ems only
+cookbook 'gcb_chef_cookbook-tibco_ems', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_ems.git'
+cookbook 'gcb_chef_cookbook-tibco_emscreateinstance', git: 'http://oo-gitlab.nam.nsroot.net/aws_poc_team/gcb_chef_cookbook-tibco_emscreateinstance.git'

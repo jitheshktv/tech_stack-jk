@@ -1,0 +1,468 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Citi / PoC / Sawgrass / IHS / Servers",
+  "Parameters": {
+    "ArtifactBucketName" : {
+      "Type" : "String",
+      "Default": "citi-orch-dev_artifacts"
+    },
+    "ArtifactIdList" : {
+      "Description" : "comma-delimited list of artifact ids",
+      "Type" : "String"
+    },
+    "ChefRecipe" : {
+      "Description" : "chef recipe feed to orchestrator_client",
+      "Type" : "String"
+    },
+    "OrchestratorClientInstanceProfile": {
+      "Description": "Profile injected by the Orchestrator",
+      "Type": "String"
+    },
+    "ihsVpcId": {
+      "Description": "VPC where load balancer will reside",
+      "Type": "AWS::EC2::VPC::Id",
+      "ConstraintDescription": "must be a valid VPC Id"
+    },
+    "ihsPrivateSubnetIdA": {
+      "Description": "Subnet Id of first subnet (subnet must belong to VPC indicated previously)",
+      "Type": "AWS::EC2::Subnet::Id",
+      "ConstraintDescription": "must be a valid Subnet Id of an existing subnet"
+    },
+    "ihsPrivateSubnetIdB": {
+      "Description": "Subnet Id of second subnet (subnet must belong to VPC indicated previously)",
+      "Type": "AWS::EC2::Subnet::Id",
+      "ConstraintDescription": "must be a valid Subnet Id of an existing subnet"
+    },
+    "ihsAssociatePublicIpAddr": {
+      "Description": "Should the EC2 instance be assigned a public IP",
+      "Type": "String",
+      "Default": "false"
+    },
+    "ihsELBPort": {
+      "Default": "443",
+      "Description": "load balancer listener port",
+      "Type": "Number",
+      "MinValue": "0",
+      "MaxValue": "65535"
+    },
+    "ihsInstancePort": {
+      "Default": "10000",
+      "Description": "Instance port reached by load balancer",
+      "Type": "Number",
+      "MinValue": "0",
+      "MaxValue": "65535"
+    },
+    "ihsElbProtocol": {
+      "Default": "HTTPS",
+      "Description": "Load balancer protocol (eg, HTTP, HTTPS)",
+      "Type": "String",
+      "AllowedValues": [
+        "HTTP",
+        "HTTPS"
+      ]
+    },
+    "ihsInstanceProtocol": {
+      "Default": "HTTPS",
+      "Description": "Instance protocol (eg, HTTP, HTTPS)",
+      "Type": "String",
+      "AllowedValues": [
+        "HTTP",
+        "HTTPS"
+      ]
+    },
+    "ihsServerFleetDesiredCapacity": {
+      "Description": "Number of EC2 instances to launch in the server fleet",
+      "Type": "Number",
+      "Default": "1"
+    },
+    "ihsServerFleetMaxCapacity": {
+      "Description": "Max number of EC2 instances to launch in the server fleet",
+      "Type": "Number",
+      "Default": "1"
+    },
+    "ihsSSHFromCIDRBLock": {
+      "Description": "CIDR block allowed to SSH into EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "ihsELBFromCIDRBlock": {
+      "Description": "CIDR block allowed to access the ELB endpoint",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "ihsKeyName": {
+      "Description": "Existing AWS EC2 Key Pair name for AutoScaling EC2 instances",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "ihsEC2InstanceType": {
+      "Description": "Server EC2 instance type",
+      "Type": "String",
+      "Default": "m3.medium",
+      "AllowedValues": [
+        "t1.micro",
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "m1.small",
+        "m1.medium",
+        "m1.large",
+        "m1.xlarge",
+        "m2.xlarge",
+        "m2.2xlarge",
+        "m2.4xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m4.10xlarge",
+        "c1.medium",
+        "c1.xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "g2.2xlarge",
+        "g2.8xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge",
+        "d2.xlarge",
+        "d2.2xlarge",
+        "d2.4xlarge",
+        "d2.8xlarge",
+        "hi1.4xlarge",
+        "hs1.8xlarge",
+        "cr1.8xlarge",
+        "cc2.8xlarge",
+        "cg1.4xlarge"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 instance type."
+    },
+    "ihsImageId": {
+      "Description": "AMI to launch new instances in the auto-scaling group",
+      "Type": "AWS::EC2::Image::Id",
+      "ConstraintDescription": "must be a valid AMI"
+    },
+    "ihsContentServerIp": {
+      "Description": "IP address for the content server",
+      "Type": "String"
+    },
+    "ihsContentServerPort": {
+      "Description": "TCP port for the content server",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "ElasticLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Scheme": "internal",
+        "CrossZone": "true",
+        "SecurityGroups": [
+          {
+            "Ref": "LoadBalancerSecurityGroup"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "ihsPrivateSubnetIdA"
+          },
+          {
+            "Ref": "ihsPrivateSubnetIdB"
+          }
+        ],
+        "Listeners": [
+          {
+            "LoadBalancerPort": {
+              "Ref": "ihsELBPort"
+            },
+            "InstancePort": {
+              "Ref": "ihsInstancePort"
+            },
+            "Protocol": {
+              "Ref": "ihsElbProtocol"
+            },
+            "InstanceProtocol": {
+              "Ref": "ihsInstanceProtocol"
+            }
+          }
+        ],
+        "HealthCheck": {
+          "Target": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "ihsInstanceProtocol"
+                },
+                ":",
+                {
+                  "Ref": "ihsInstancePort"
+                },
+                "/"
+              ]
+            ]
+          },
+          "HealthyThreshold": "3",
+          "UnhealthyThreshold": "5",
+          "Interval": "90",
+          "Timeout": "60"
+        }
+      }
+    },
+    "AutoScalingServerFleet": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "ihsPrivateSubnetIdA",
+            "Ref": "ihsPrivateSubnetIdB"
+          }
+        ],
+        "LaunchConfigurationName": {
+          "Ref": "ServerLaunchConfig"
+        },
+        "MinSize": "1",
+        "MaxSize": {
+          "Ref": "ihsServerFleetMaxCapacity"
+        },
+        "DesiredCapacity": {
+          "Ref": "ihsServerFleetDesiredCapacity"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "ElasticLoadBalancer"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Sawgrass-WW-IHS",
+            "PropagateAtLaunch": "true"
+          }
+        ]
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Timeout": "PT45M",
+          "Count": {
+            "Ref": "ihsServerFleetDesiredCapacity"
+          }
+        }
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize": "1",
+          "PauseTime": "PT15M",
+          "WaitOnResourceSignals": "true"
+        }
+      }
+    },
+    "ServerLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {
+          "Ref": "ihsImageId"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "ServerSecurityGroup"
+          }
+        ],
+        "InstanceType": {
+          "Ref": "ihsEC2InstanceType"
+        },
+        "KeyName": {
+          "Ref": "ihsKeyName"
+        },
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdf",
+            "Ebs" : {
+              "DeleteOnTermination" : "true",
+              "VolumeSize" : "60"
+            }
+          },
+          {
+            "DeviceName" : "/dev/sdk",
+            "Ebs" : {
+              "DeleteOnTermination" : "true",
+              "VolumeSize" : "40"
+            }
+          }
+        ],
+
+        "IamInstanceProfile": {"Ref": "OrchestratorClientInstanceProfile"},
+        "AssociatePublicIpAddress": {"Ref": "ihsAssociatePublicIpAddr"},
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "set -x\n",
+                "export PATH=/usr/local/bin:$PATH\n",
+                "export AWS_REGION=us-east-1\n",
+                "env\n",
+
+                "source /etc/profile.d/proxy.sh\n",
+
+                "function error_exit {\n",
+                "  cfn-signal -e 1 --stack ", { "Ref" : "AWS::StackName" }, " --resource AutoScalingServerFleet \n",
+                "  exit 1\n",
+                "}\n",
+
+                "[ ! -d /orchestrator/client ] && echo \"ERROR:  cant find orchestrator client\" && error_exit\n",
+                "cd /orchestrator/client\n",
+
+                "cat - <<JSON > /var/tmp/chef_attributes.json\n",
+                "{\"content_server\": {\"ip\": \"", { "Ref" : "ihsContentServerIp" }, "\", \"port\": \"",{ "Ref" : "ihsContentServerPort" }, "\"}}\n",
+                "JSON\n",
+
+                "./orchestrator_client.sh artifact_handler ", {"Fn::Join": ["", ["s3://", {"Ref": "ArtifactBucketName"}]]}," ", {"Ref": "ArtifactIdList"}," || error_exit \n",
+
+                "./orchestrator_client.sh chef_handler ", { "Ref": "ChefRecipe" }," /var/tmp/chef_attributes.json || error_exit\n",
+
+                "cfn-signal -e 0 --stack ", { "Ref" : "AWS::StackName" }, " --resource AutoScalingServerFleet \n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "ServerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow access from load balancer and bastion as well as outbound HTTP and HTTPS traffic",
+        "VpcId": {
+          "Ref": "ihsVpcId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "ihsSSHFromCIDRBLock"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "ServerSecurityGroupIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "ServerSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": {
+          "Ref": "ihsInstancePort"
+        },
+        "ToPort": {
+          "Ref": "ihsInstancePort"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "LoadBalancerSecurityGroup"
+        }
+      }
+    },
+    "LoadBalancerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "ElasticLoadBalancer Security Group",
+        "VpcId": {
+          "Ref": "ihsVpcId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": {
+              "Ref": "ihsELBPort"
+            },
+            "ToPort": {
+              "Ref": "ihsELBPort"
+            },
+            "CidrIp": {
+              "Ref": "ihsELBFromCIDRBlock"
+            }
+          }
+        ]
+      }
+    },
+    "LoadBalancerSecurityGroupEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "LoadBalancerSecurityGroup"
+        },
+        "IpProtocol": "TCP",
+        "FromPort": {
+          "Ref": "ihsInstancePort"
+        },
+        "ToPort": {
+          "Ref": "ihsInstancePort"
+        },
+        "DestinationSecurityGroupId": {
+          "Ref": "ServerSecurityGroup"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ihsELBUrl": {
+      "Description": "URL of load balancer",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "ElasticLoadBalancer",
+                "DNSName"
+              ]
+            }
+          ]
+        ]
+      }
+    }
+  }
+}
