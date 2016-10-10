@@ -4,7 +4,43 @@ run_list:
     group: 1
     layer: security
     cfn_template: security_sawgrass_dsl.rb
-#  - layer: policy
-#    cfn_template: policy_demo_dsl.rb
-#  - layer: policy
-#    cfn_template: policy_s3-bucket_dsl.rb
+  - name: awtool1d
+    group: 2
+    layer: database
+    cfn_template: database_awtool1d.json
+    oracle_script: main.sql
+  - name: ihs
+    group: 2
+    layer: server
+    cfn_template: server_ihs.json
+    chef_cookbook: sawgrass-ihs
+    chef_cfn_attr_map: {content_server: {ip: "ihsContentServerIp", port: "ihsContentServerPort"}}
+  - name: wasdmgr
+    group: 2
+    layer: server
+    cfn_template: server_was-dmgr_dsl.rb
+    chef_cookbook: sawgrass-was-dmgr
+    chef_cfn_attr_map: {content_server: {ip: "wasdmgrContentServerIp", port: "wasdmgrContentServerPort"}}
+  - name: was
+    group: 3
+    layer: server
+    cfn_template: server_was_dsl.rb
+    chef_cookbook: sawgrass-was
+    chef_cfn_attr_map: {content_server: {ip: "wasContentServerIp", port: "wasContentServerPort"}, wsi: {dmgr_host_name: "wasdmgrInstancePrivateIp"}}
+  - name: tibcoems
+    group: 3
+    layer: server
+    cfn_template: server_tibco-ems_dsl.rb
+    chef_cookbook: sawgrass-tibco-ems
+  - name: tibcoadmin
+    group: 4
+    layer: server
+    cfn_template: server_tibco-admin_dsl.rb
+    chef_cookbook: sawgrass-tibco-admin
+    #chef_cfn_attr_map: {createdomain-dbems: {config: {ems_server_ip: "tibcoemsInstancePrivateIp", ems_server_port: "tibcoemsTcpPort", db_hostname: "awtool1dRDSHostname", db_port: "awtool1dTcpPort", db_sid: "awtool1dDBName", db_user_name: "awtool1dMasterUsername", db_user_password: "awtool1dMasterUserPassword", domain_name: "tibcoemsDomain", db_security_group: "awtool1dRDSAccessSecurityGroup", tibco_security_group_id: "jkTibcoDomainSecurityGroupId"}}}
+  - name: tibcobw
+    group: 4
+    layer: server
+    cfn_template: server_tibco-bw_dsl.rb
+    chef_cookbook: sawgrass-tibco-bw
+    #chef_cfn_attr_map: {tibco_caddie: {install: {domain_name: "tibcoemsDomain"}}, addmachine-dbems: {config: {ems_server_ip: "tibcoemsInstancePrivateIp", ems_server_port: "tibcoemsTcpPort", db_hostname: "awtool1dRDSHostname", db_port: "awtool1dTcpPort", db_sid: "awtool1dDBName", db_user_name: "awtool1dMasterUsername", db_user_password: "awtool1dMasterUserPassword", domain_name: "tibcoemsDomain", db_security_group: "awtool1dRDSAccessSecurityGroup", tibco_security_group_id: "jkTibcoDomainSecurityGroupId"}}}
